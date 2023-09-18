@@ -10,6 +10,7 @@ public class UITemplateEditorWindow : EditorWindow
     private string jsonFilePath = "Assets/UIObjectTemplates/template.json";
     private string jsonContent;
     private Transform selectedUITransform;
+    Vector2 scroll;
 
     [MenuItem("Custom/UI Template Editor")]
     public static void ShowWindow()
@@ -28,8 +29,10 @@ public class UITemplateEditorWindow : EditorWindow
         }
 
         // Display and edit the JSON content
-        jsonContent = EditorGUILayout.TextArea(jsonContent, GUILayout.Height(200));
 
+        scroll = EditorGUILayout.BeginScrollView(scroll, GUILayout.Height(200));
+        jsonContent = EditorGUILayout.TextArea(jsonContent);
+        EditorGUILayout.EndScrollView();
 
         GUILayout.Space(10);
 
@@ -47,45 +50,32 @@ public class UITemplateEditorWindow : EditorWindow
         EditorGUILayout.LabelField("Customize Selected UI Element");
 
         // Select a UI element in the scene hierarchy to customize its properties
-        
+
         if (GUILayout.Button("Select UI Element in Scene"))
         {
-            if (selectedUITransform != null)
+            if (Selection.activeTransform)
             {
-                Text textComponent = selectedUITransform.GetComponent<Text>();
-                if (textComponent != null)
-                {
-                    textComponent.text = EditorGUILayout.TextField("Text", textComponent.text);
-                }
+                selectedUITransform = Selection.activeTransform;
             }
         }
 
         GUILayout.Label("Selected UI Element:");
-
         EditorGUI.BeginChangeCheck();
-        selectedUITransform =
-            EditorGUILayout.ObjectField(selectedUITransform, typeof(Transform), true) as Transform;
-
-        if (EditorGUI.EndChangeCheck() && selectedUITransform != null)
+        selectedUITransform = EditorGUILayout.ObjectField(selectedUITransform, typeof(Transform), true) as Transform;
+        if (selectedUITransform != null)
         {
-            // Allow users to modify the selected UI element's properties
+            Text textComponent = selectedUITransform.GetComponent<Text>();
+            if (textComponent != null)
+            {
+                textComponent.text = EditorGUILayout.TextField("Text", textComponent.text);
+            }
             EditorGUI.indentLevel++;
-            selectedUITransform.localPosition = EditorGUILayout.Vector3Field(
-                "Position",
-                selectedUITransform.localPosition
-            );
-            selectedUITransform.localRotation = Quaternion.Euler(
-                EditorGUILayout.Vector3Field(
-                    "Rotation",
-                    selectedUITransform.localRotation.eulerAngles
-                )
-            );
-            selectedUITransform.localScale = EditorGUILayout.Vector3Field(
-                "Scale",
-                selectedUITransform.localScale
-            );
+            selectedUITransform.localPosition = EditorGUILayout.Vector3Field("Position",selectedUITransform.localPosition);
+            selectedUITransform.localRotation = Quaternion.Euler(EditorGUILayout.Vector3Field("Rotation",selectedUITransform.localRotation.eulerAngles));
+            selectedUITransform.localScale = EditorGUILayout.Vector3Field("Scale",selectedUITransform.localScale);
             EditorGUI.indentLevel--;
         }
+        EditorGUI.EndChangeCheck();
 
         GUILayout.Space(10);
 
@@ -186,9 +176,9 @@ public class UITemplateEditorWindow : EditorWindow
                             uiText.horizontalOverflow = HorizontalWrapMode.Overflow;
                             break;
                     }
-                    
+
                     // Customize the UI element based on its properties
-                    
+
                 }
             }
             else
@@ -269,7 +259,7 @@ public class UIElement
     public string ImageSource;
     public string FontStyle;
     public Color32 Color;
-    
+
 
     // Add more properties as needed (e.g., color, text, etc.).
 }
